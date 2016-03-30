@@ -97,32 +97,11 @@ func newAstVisitor(f *ast.File, fset *token.FileSet, info *types.Info) *astVisit
 	}
 }
 
-func (v *astVisitor) enclosingFuncDecl(expr ast.Node) *ast.FuncDecl {
-	path, _ := astutil.PathEnclosingInterval(v.f, expr.Pos(), expr.End())
-	for _, n := range path {
-		// fmt.Printf("n: %#v\n", n)
-		if funcDecl, ok := n.(*ast.FuncDecl); ok {
-			return funcDecl
-		}
+func (v *astVisitor) Visit(node ast.Node) ast.Visitor {
+	if n, ok := node.(*ast.CallExpr); ok {
+		return v.VisitCallExpr(n)
 	}
-	return nil
-}
-
-func exprToIdent(expr ast.Expr) *ast.Ident {
-	if ident, ok := expr.(*ast.Ident); ok {
-		return ident
-	}
-	return expr.(*ast.StarExpr).X.(*ast.Ident)
-}
-
-func (v *astVisitor) addViolation(expr *ast.CallExpr) {
-	fpos := v.fset.Position(expr.Pos())
-	violation := &Violation{
-		Filename: fpos.Filename,
-		Line:     fpos.Line,
-		Col:      fpos.Column,
-	}
-	v.Violations = append(v.Violations, violation)
+	return v
 }
 
 func (v *astVisitor) VisitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor) {
@@ -205,11 +184,25 @@ func (v *astVisitor) VisitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 	return
 }
 
-func (v *astVisitor) Visit(node ast.Node) ast.Visitor {
-	if n, ok := node.(*ast.CallExpr); ok {
-		return v.VisitCallExpr(n)
+func (v *astVisitor) addViolation(expr *ast.CallExpr) {
+	fpos := v.fset.Position(expr.Pos())
+	violation := &Violation{
+		Filename: fpos.Filename,
+		Line:     fpos.Line,
+		Col:      fpos.Column,
 	}
-	return v
+	v.Violations = append(v.Violations, violation)
+}
+
+func (v *astVisitor) enclosingFuncDecl(expr ast.Node) *ast.FuncDecl {
+	path, _ := astutil.PathEnclosingInterval(v.f, expr.Pos(), expr.End())
+	for _, n := range path {
+		// fmt.Printf("n: %#v\n", n)
+		if funcDecl, ok := n.(*ast.FuncDecl); ok {
+			return funcDecl
+		}
+	}
+	return nil
 }
 
 func (v *astVisitor) lookupXSel(sexpr *ast.SelectorExpr) (retx, retsel *ast.Ident) {
@@ -231,4 +224,11 @@ func (v *astVisitor) lookupXSel(sexpr *ast.SelectorExpr) (retx, retsel *ast.Iden
 	}
 
 	return
+}
+
+func exprToIdent(expr ast.Expr) *ast.Ident {
+	if ident, ok := expr.(*ast.Ident); ok {
+		return ident
+	}
+	return expr.(*ast.StarExpr).X.(*ast.Ident)
 }
