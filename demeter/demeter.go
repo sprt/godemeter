@@ -1,7 +1,10 @@
 package demeter
 
 import (
+	"fmt"
 	"go/ast"
+	"go/importer"
+	"go/parser"
 	"go/token"
 	"go/types"
 
@@ -15,6 +18,69 @@ type Violation struct {
 	Col      int
 }
 
+func analyzeFile(filename string, f *ast.File, fset *token.FileSet) ([]*Violation, error) {
+	info := &types.Info{
+		// TODO: check if we can remove any
+		Types:      make(map[ast.Expr]types.TypeAndValue),
+		Defs:       make(map[*ast.Ident]types.Object),
+		Uses:       make(map[*ast.Ident]types.Object),
+		Selections: make(map[*ast.SelectorExpr]*types.Selection),
+		Implicits:  make(map[ast.Node]types.Object),
+	}
+
+	config := &types.Config{
+		Error: func(err error) {
+			fmt.Println(err)
+		},
+		Importer: importer.Default(),
+	}
+
+	_, err := config.Check(filename, fset, []*ast.File{f}, info)
+	if err != nil {
+		return nil, err
+	}
+
+	visitor := newAstVisitor(f, fset, info)
+	ast.Walk(visitor, f)
+
+	return visitor.Violations, nil
+}
+
+// AnalyzeFile analyzes a single file and returns the violations.
+func AnalyzeFile(filename string) ([]*Violation, error) {
+	fset := token.NewFileSet()
+
+	f, err := parser.ParseFile(fset, filename, nil, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	return analyzeFile(filename, f, fset)
+}
+
+// AnalyzeDir analyzes a directory (non-recursively) and returns the violations.
+func AnalyzeDir(dirname string) ([]*Violation, error) {
+	fset := token.NewFileSet()
+
+	packages, err := parser.ParseDir(fset, dirname, nil, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	violations := []*Violation{}
+	for _, p := range packages {
+		for filename, f := range p.Files {
+			v, err := analyzeFile(filename, f, fset)
+			if err != nil {
+				return nil, err
+			}
+			violations = append(violations, v...)
+		}
+	}
+
+	return violations, nil
+}
+
 type astVisitor struct {
 	info       *types.Info
 	f          *ast.File
@@ -22,7 +88,7 @@ type astVisitor struct {
 	Violations []*Violation
 }
 
-func NewAstVisitor(f *ast.File, fset *token.FileSet, info *types.Info) *astVisitor {
+func newAstVisitor(f *ast.File, fset *token.FileSet, info *types.Info) *astVisitor {
 	return &astVisitor{
 		info:       info,
 		f:          f,
