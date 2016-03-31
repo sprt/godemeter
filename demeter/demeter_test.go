@@ -25,10 +25,10 @@ func TestEmptyPackage(t *testing.T) {
 
 	violations, err := analyzeString(s)
 	if err != nil {
-		t.Errorf("TestEmptyPackage: error: %v", err)
+		t.Errorf("error: %v", err)
 	}
 
 	if len(violations) != 0 {
-		t.Errorf("TestEmptyPackage: got %#v, expected empty slice", violations)
+		t.Errorf("got %#v, expected empty slice", violations)
 	}
 }
