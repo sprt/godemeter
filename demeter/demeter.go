@@ -43,7 +43,7 @@ func analyzeFile(filename string, f *ast.File, fset *token.FileSet) ([]*Violatio
 	visitor := newAstVisitor(f, fset, info)
 	ast.Walk(visitor, f)
 
-	return visitor.Violations, nil
+	return visitor.violations, nil
 }
 
 // AnalyzeFile analyzes a single file and returns the violations.
@@ -85,7 +85,7 @@ type astVisitor struct {
 	info       *types.Info
 	f          *ast.File
 	fset       *token.FileSet
-	Violations []*Violation
+	violations []*Violation
 }
 
 func newAstVisitor(f *ast.File, fset *token.FileSet, info *types.Info) *astVisitor {
@@ -93,18 +93,18 @@ func newAstVisitor(f *ast.File, fset *token.FileSet, info *types.Info) *astVisit
 		info:       info,
 		f:          f,
 		fset:       fset,
-		Violations: []*Violation{},
+		violations: []*Violation{},
 	}
 }
 
 func (v *astVisitor) Visit(node ast.Node) ast.Visitor {
 	if n, ok := node.(*ast.CallExpr); ok {
-		return v.VisitCallExpr(n)
+		return v.visitCallExpr(n)
 	}
 	return v
 }
 
-func (v *astVisitor) VisitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor) {
+func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor) {
 	visitor = v
 
 	fun, ok := callExpr.Fun.(*ast.SelectorExpr)
@@ -191,7 +191,7 @@ func (v *astVisitor) addViolation(expr *ast.CallExpr) {
 		Line:     fpos.Line,
 		Col:      fpos.Column,
 	}
-	v.Violations = append(v.Violations, violation)
+	v.violations = append(v.violations, violation)
 }
 
 func (v *astVisitor) enclosingFuncDecl(expr ast.Node) *ast.FuncDecl {
