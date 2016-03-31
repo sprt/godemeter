@@ -21,11 +21,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	var fun func(string) ([]*demeter.Violation, error)
+	fun := demeter.AnalyzeFile
 	if finfo.IsDir() {
 		fun = demeter.AnalyzeDir
-	} else {
-		fun = demeter.AnalyzeFile
 	}
 
 	violations, err := fun(path)
