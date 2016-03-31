@@ -27,7 +27,7 @@ func AnalyzeFile(filename string) ([]*Violation, error) {
 		return nil, err
 	}
 
-	return analyzeFile(filename, f, fset)
+	return analyzeFile(filename, f, nil, fset)
 }
 
 // AnalyzeDir analyzes a directory (non-recursively) and returns the violations.
@@ -42,7 +42,7 @@ func AnalyzeDir(dirname string) ([]*Violation, error) {
 	violations := []*Violation{}
 	for _, p := range packages {
 		for filename, f := range p.Files {
-			v, err := analyzeFile(filename, f, fset)
+			v, err := analyzeFile(filename, f, nil, fset)
 			if err != nil {
 				return nil, err
 			}
@@ -53,7 +53,7 @@ func AnalyzeDir(dirname string) ([]*Violation, error) {
 	return violations, nil
 }
 
-func analyzeFile(filename string, f *ast.File, fset *token.FileSet) ([]*Violation, error) {
+func analyzeFile(filename string, f *ast.File, src interface{}, fset *token.FileSet) ([]*Violation, error) {
 	info := &types.Info{
 		// TODO: check if we can remove any
 		Types:      make(map[ast.Expr]types.TypeAndValue),
