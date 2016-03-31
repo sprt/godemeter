@@ -18,34 +18,6 @@ type Violation struct {
 	Col      int
 }
 
-func analyzeFile(filename string, f *ast.File, fset *token.FileSet) ([]*Violation, error) {
-	info := &types.Info{
-		// TODO: check if we can remove any
-		Types:      make(map[ast.Expr]types.TypeAndValue),
-		Defs:       make(map[*ast.Ident]types.Object),
-		Uses:       make(map[*ast.Ident]types.Object),
-		Selections: make(map[*ast.SelectorExpr]*types.Selection),
-		Implicits:  make(map[ast.Node]types.Object),
-	}
-
-	config := &types.Config{
-		Error: func(err error) {
-			fmt.Println(err)
-		},
-		Importer: importer.Default(),
-	}
-
-	_, err := config.Check(filename, fset, []*ast.File{f}, info)
-	if err != nil {
-		return nil, err
-	}
-
-	visitor := newAstVisitor(f, fset, info)
-	ast.Walk(visitor, f)
-
-	return visitor.violations, nil
-}
-
 // AnalyzeFile analyzes a single file and returns the violations.
 func AnalyzeFile(filename string) ([]*Violation, error) {
 	fset := token.NewFileSet()
@@ -79,6 +51,34 @@ func AnalyzeDir(dirname string) ([]*Violation, error) {
 	}
 
 	return violations, nil
+}
+
+func analyzeFile(filename string, f *ast.File, fset *token.FileSet) ([]*Violation, error) {
+	info := &types.Info{
+		// TODO: check if we can remove any
+		Types:      make(map[ast.Expr]types.TypeAndValue),
+		Defs:       make(map[*ast.Ident]types.Object),
+		Uses:       make(map[*ast.Ident]types.Object),
+		Selections: make(map[*ast.SelectorExpr]*types.Selection),
+		Implicits:  make(map[ast.Node]types.Object),
+	}
+
+	config := &types.Config{
+		Error: func(err error) {
+			fmt.Println(err)
+		},
+		Importer: importer.Default(),
+	}
+
+	_, err := config.Check(filename, fset, []*ast.File{f}, info)
+	if err != nil {
+		return nil, err
+	}
+
+	visitor := newAstVisitor(f, fset, info)
+	ast.Walk(visitor, f)
+
+	return visitor.violations, nil
 }
 
 type astVisitor struct {
