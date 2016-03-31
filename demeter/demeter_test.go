@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-const filename = "foo.go"
+const filename = "main.go"
 
 func analyzeString(s string) ([]*Violation, error) {
 	fset := token.NewFileSet()
