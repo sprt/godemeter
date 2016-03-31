@@ -165,7 +165,6 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 			if name.Names[0].Name == sel.Name {
 				if x != nil && x.Name == funcDeclRecv.Name {
 					// Call on one of O's direct components
-					// XXX: check embedded methods
 					return
 				}
 				break
