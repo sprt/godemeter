@@ -86,8 +86,7 @@ func TestCallOnObjectDeclaredInAnotherMethod(t *testing.T) {
 	func (f *Foo) foo() {}
 	type Bar struct{}
 	func (b *Bar) foo() *Foo { return &Foo{} }
-	func (b *Bar) bar() { f := b.foo(); f.foo() }
-	`
+	func (b *Bar) bar() { f := b.foo(); f.foo() }`
 
 	violations, err := analyzeString(s)
 	if err != nil {
