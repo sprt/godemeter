@@ -120,6 +120,10 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 		callRecv := call.Type().(*types.Signature).Recv()
 		if callRecv == nil {
 			// Not a method call
+			//
+			// Local-function calls aren't selector expressions,
+			// but external ones are,
+			// which is why we're checking for a receiver.
 			return
 		}
 
