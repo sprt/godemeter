@@ -68,6 +68,23 @@ func TestNoViolation(t *testing.T) {
 	type Bar struct{}
 	func (b *Bar) bar() { f.foo() }`
 
+	inputs["Function call inside a method"] = `
+	package main
+	type Foo struct{}
+	func bar() {}
+	func (f *Foo) foo() { bar() }`
+
+	inputs["Function call outside a method"] = `
+	package main
+	func foo() {}
+	func bar() { foo() }`
+
+	inputs["Method call outside a method"] = `
+	package main
+	type Foo struct{}
+	func (f *Foo) foo() {}
+	func bar() { f := &Foo{}; f.foo() }`
+
 	for name, s := range inputs {
 		violations, err := analyzeString(s)
 		if err != nil {
@@ -87,6 +104,25 @@ func TestCallOnObjectDeclaredInAnotherMethod(t *testing.T) {
 	type Bar struct{}
 	func (b *Bar) foo() *Foo { return &Foo{} }
 	func (b *Bar) bar() { f := b.foo(); f.foo() }`
+
+	violations, err := analyzeString(s)
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+	if len(violations) != 1 || violations[0].Line != 7 {
+		t.Errorf("got %#v, expected 1 violation at line 7", violations)
+	}
+}
+
+func TestChainedMethodCall(t *testing.T) {
+	s := `
+	package main
+	type Foo struct{}
+	func (f *Foo) foo() {}
+	type Bar struct{}
+	func (b *Bar) bar1() *Foo { return &Foo{} }
+	func (b *Bar) bar2() { b.bar1().foo() }
+	`
 
 	violations, err := analyzeString(s)
 	if err != nil {
