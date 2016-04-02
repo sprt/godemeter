@@ -28,7 +28,7 @@ func main() {
 
 	violations, err := fun(path)
 	if err != nil {
-		log.Fatalln(path)
+		log.Fatalln(err)
 	}
 
 	wd, err := os.Getwd()
