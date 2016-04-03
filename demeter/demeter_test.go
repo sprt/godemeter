@@ -47,7 +47,7 @@ func TestNoViolation(t *testing.T) {
 	type Bar struct{}
 	func (b *Bar) bar(f *Foo) { f.foo() }`
 
-	inputs["Call on object created in m"] = `
+	inputs["Call on object instantiated in m"] = `
 	package main
 	type Foo struct{}
 	func (f *Foo) foo() {}
