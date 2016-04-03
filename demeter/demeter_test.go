@@ -54,6 +54,13 @@ func TestNoViolation(t *testing.T) {
 	type Bar struct{}
 	func (b *Bar) bar() { f := &Foo{}; f.foo() }`
 
+	inputs["Call on object instantiated in m with new()"] = `
+	package main
+	type Foo struct{}
+	func (f *Foo) foo() {}
+	type Bar struct{}
+	func (b *Bar) bar() { f := new(Foo); f.foo() }`
+
 	inputs["Call on O's direct component"] = `
 	package main
 	type Foo struct{}
