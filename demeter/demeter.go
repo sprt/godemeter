@@ -174,13 +174,16 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 			return
 		}
 
-		for _, name := range exprToIdent(funcDecl.Recv.List[0].Type).Obj.Decl.(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {
-			if name.Names[0].Name == sel.Name {
-				if x != nil && x.Name == funcDeclRecv.Name {
-					// Call on one of O's direct components
-					return
+		// TODO: test this with inter-package structs
+		if recvType, ok := v.info.TypeOf(exprToIdent(funcDecl.Recv.List[0].Type)).Underlying().(*types.Struct); ok {
+			for i := 0; i < recvType.NumFields(); i++ {
+				if recvType.Field(i).Name() == sel.Name {
+					if x != nil && x.Name == funcDeclRecv.Name {
+						// Call on one of O's direct components
+						return
+					}
+					break
 				}
-				break
 			}
 		}
 
