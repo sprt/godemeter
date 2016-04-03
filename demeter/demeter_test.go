@@ -76,6 +76,11 @@ func TestNoViolation(t *testing.T) {
 	type Bar struct{}
 	func (b *Bar) bar() { f.foo() }`
 
+	inputs["Call on inter-package object at top level"] = `
+	package main
+	import "archive/tar"
+	var a = tar.ErrHeader.Error()`
+
 	inputs["Function call inside a method"] = `
 	package main
 	type Foo struct{}

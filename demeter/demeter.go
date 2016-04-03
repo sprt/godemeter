@@ -135,7 +135,7 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 		}
 
 		funcDecl := v.enclosingFuncDecl(fun)
-		if funcDecl.Recv == nil {
+		if funcDecl == nil || funcDecl.Recv == nil {
 			// Not inside a method
 			return
 		}
