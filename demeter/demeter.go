@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"path/filepath"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
@@ -27,7 +28,7 @@ func AnalyzeFile(filename string) ([]*Violation, error) {
 		return nil, err
 	}
 
-	return analyzeFile(filename, f, nil, fset)
+	return analyzeFiles(filepath.Dir(filename), []*ast.File{f}, fset)
 }
 
 // AnalyzeDir analyzes a directory (non-recursively) and returns the violations.
@@ -41,19 +42,21 @@ func AnalyzeDir(dirname string) ([]*Violation, error) {
 
 	violations := []*Violation{}
 	for _, p := range packages {
-		for filename, f := range p.Files {
-			v, err := analyzeFile(filename, f, nil, fset)
-			if err != nil {
-				return nil, err
-			}
-			violations = append(violations, v...)
+		files := []*ast.File{}
+		for _, f := range p.Files {
+			files = append(files, f)
 		}
+		v, err := analyzeFiles(dirname, files, fset)
+		if err != nil {
+			return nil, err
+		}
+		violations = append(violations, v...)
 	}
 
 	return violations, nil
 }
 
-func analyzeFile(filename string, f *ast.File, src interface{}, fset *token.FileSet) ([]*Violation, error) {
+func analyzeFiles(packagePath string, files []*ast.File, fset *token.FileSet) ([]*Violation, error) {
 	info := &types.Info{
 		// TODO: check if we can remove any
 		Types:      make(map[ast.Expr]types.TypeAndValue),
@@ -70,15 +73,19 @@ func analyzeFile(filename string, f *ast.File, src interface{}, fset *token.File
 		Importer: importer.Default(),
 	}
 
-	_, err := config.Check(filename, fset, []*ast.File{f}, info)
+	_, err := config.Check(packagePath, fset, files, info)
 	if err != nil {
 		return nil, err
 	}
 
-	visitor := newAstVisitor(f, fset, info)
-	ast.Walk(visitor, f)
+	violations := []*Violation{}
+	for _, f := range files {
+		visitor := newAstVisitor(f, fset, info)
+		ast.Walk(visitor, f)
+		violations = append(violations, visitor.violations...)
+	}
 
-	return visitor.violations, nil
+	return violations, nil
 }
 
 type astVisitor struct {

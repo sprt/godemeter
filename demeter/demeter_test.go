@@ -1,6 +1,7 @@
 package demeter
 
 import (
+	"go/ast"
 	"go/parser"
 	"go/token"
 	"log"
@@ -17,7 +18,7 @@ func analyzeString(s string) ([]*Violation, error) {
 		log.Fatalln("analyzeString:", err)
 	}
 
-	return analyzeFile(filename, f, s, fset)
+	return analyzeFiles(filename, []*ast.File{f}, fset)
 }
 
 func TestNoViolation(t *testing.T) {
