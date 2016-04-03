@@ -31,8 +31,8 @@ func AnalyzeFile(filename string) ([]*Violation, error) {
 	return analyzeFiles(filepath.Dir(filename), []*ast.File{f}, fset)
 }
 
-// AnalyzeDir analyzes a directory (non-recursively) and returns the violations.
-func AnalyzeDir(dirname string) ([]*Violation, error) {
+// AnalyzePackage analyzes a package and returns the violations.
+func AnalyzePackage(dirname string) ([]*Violation, error) {
 	fset := token.NewFileSet()
 
 	packages, err := parser.ParseDir(fset, dirname, nil, 0)

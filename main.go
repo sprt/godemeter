@@ -23,7 +23,7 @@ func main() {
 
 	fun := demeter.AnalyzeFile
 	if finfo.IsDir() {
-		fun = demeter.AnalyzeDir
+		fun = demeter.AnalyzePackage
 	}
 
 	violations, err := fun(path)
