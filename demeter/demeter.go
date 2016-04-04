@@ -1,10 +1,12 @@
 package demeter
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/importer"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"go/types"
 	"path/filepath"
@@ -17,6 +19,7 @@ type Violation struct {
 	Filename string
 	Line     int
 	Col      int
+	Expr     string
 }
 
 // AnalyzeFile analyzes a single file and returns the violations.
@@ -210,10 +213,15 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 
 func (v *astVisitor) addViolation(expr *ast.CallExpr) {
 	fpos := v.fset.Position(expr.Pos())
+
+	var buf bytes.Buffer
+	printer.Fprint(&buf, v.fset, expr.Fun)
+
 	violation := &Violation{
 		Filename: fpos.Filename,
 		Line:     fpos.Line,
 		Col:      fpos.Column,
+		Expr:     buf.String(),
 	}
 	v.violations = append(v.violations, violation)
 }

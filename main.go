@@ -41,6 +41,6 @@ func main() {
 		if err != nil {
 			relpath = violation.Filename
 		}
-		fmt.Printf("%s:%d:%d\n", relpath, violation.Line, violation.Col)
+		fmt.Printf("%s:%d:%d: %s\n", relpath, violation.Line, violation.Col, violation.Expr)
 	}
 }
