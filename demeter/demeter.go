@@ -23,6 +23,7 @@ type Violation struct {
 }
 
 // AnalyzeFile analyzes a single file and returns the violations.
+// filename should be an absolute path.
 func AnalyzeFile(filename string) ([]*Violation, error) {
 	fset := token.NewFileSet()
 
@@ -35,6 +36,7 @@ func AnalyzeFile(filename string) ([]*Violation, error) {
 }
 
 // AnalyzePackage analyzes a package and returns the violations.
+// dirname should be an absolute path.
 func AnalyzePackage(dirname string) ([]*Violation, error) {
 	fset := token.NewFileSet()
 
@@ -59,6 +61,7 @@ func AnalyzePackage(dirname string) ([]*Violation, error) {
 	return violations, nil
 }
 
+// packagePath must not be empty or dot (see types.Config.Check)
 func analyzeFiles(packagePath string, files []*ast.File, fset *token.FileSet) ([]*Violation, error) {
 	info := &types.Info{
 		// TODO: check if we can remove any

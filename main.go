@@ -26,7 +26,12 @@ func main() {
 		fun = demeter.AnalyzePackage
 	}
 
-	violations, err := fun(path)
+	abspath, err := filepath.Abs(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	violations, err := fun(abspath)
 	if err != nil {
 		log.Fatalln(err)
 	}
