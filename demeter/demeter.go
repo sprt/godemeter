@@ -159,8 +159,7 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 
 		if funcDecl.Type.Params.NumFields() > 0 {
 			for _, param := range funcDecl.Type.Params.List {
-				name := param.Names[0].Name
-				if name == sel.Name {
+				if param.Names[0].Name == sel.Name {
 					// Call on one of m's parameters
 					return
 				}
