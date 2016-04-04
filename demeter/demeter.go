@@ -228,7 +228,6 @@ func (v *astVisitor) addViolation(expr *ast.CallExpr) {
 func (v *astVisitor) enclosingFuncDecl(expr ast.Node) *ast.FuncDecl {
 	path, _ := astutil.PathEnclosingInterval(v.f, expr.Pos(), expr.End())
 	for _, n := range path {
-		// fmt.Printf("n: %#v\n", n)
 		if funcDecl, ok := n.(*ast.FuncDecl); ok {
 			return funcDecl
 		}
