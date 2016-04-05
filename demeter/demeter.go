@@ -172,7 +172,7 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 		if sel.Obj != nil {
 			if assignStmt, ok := sel.Obj.Decl.(*ast.AssignStmt); ok {
 				if rhs, ok := assignStmt.Rhs[0].(*ast.CallExpr); ok {
-					if fun, ok := rhs.Fun.(*ast.Ident); !ok || fun.Name != "new" {
+					if assignFun, ok := rhs.Fun.(*ast.Ident); !ok || assignFun.Name != "new" {
 						// Call on object initialized in m
 						// but instantiated elsewere
 						v.addViolation(callExpr)
