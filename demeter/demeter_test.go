@@ -8,17 +8,15 @@ import (
 	"testing"
 )
 
-const filename = "main.go"
-
 func analyzeString(s string) ([]*Violation, error) {
 	fset := token.NewFileSet()
 
-	f, err := parser.ParseFile(fset, filename, s, 0)
+	f, err := parser.ParseFile(fset, "main.go", s, 0)
 	if err != nil {
 		log.Fatalln("analyzeString:", err)
 	}
 
-	return analyzeFiles(filename, []*ast.File{f}, fset)
+	return analyzeFiles("main", []*ast.File{f}, fset)
 }
 
 func TestNoViolation(t *testing.T) {
