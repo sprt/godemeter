@@ -132,8 +132,7 @@ func TestChainedMethodCall(t *testing.T) {
 	func (f *Foo) foo() {}
 	type Bar struct{}
 	func (b *Bar) bar1() *Foo { return &Foo{} }
-	func (b *Bar) bar2() { b.bar1().foo() }
-	`
+	func (b *Bar) bar2() { b.bar1().foo() }`
 
 	violations, err := analyzeString(s)
 	if err != nil {
