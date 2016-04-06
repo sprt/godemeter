@@ -109,7 +109,7 @@ func TestNoViolation(t *testing.T) {
 			t.Errorf("error: %v", err)
 		}
 		if len(violations) != 0 {
-			t.Errorf("%s: got %#v, expected no violations", name, violations)
+			t.Errorf("%s: got %v, expected no violations", name, violations)
 		}
 	}
 }
@@ -128,7 +128,7 @@ func TestCallOnObjectDeclaredInAnotherMethod(t *testing.T) {
 		t.Errorf("error: %v", err)
 	}
 	if len(violations) != 1 || violations[0].Line != 7 {
-		t.Errorf("got %#v, expected 1 violation at line 7", violations)
+		t.Errorf("got %v, expected 1 violation at line 7", violations)
 	}
 }
 
@@ -146,7 +146,7 @@ func TestChainedMethodCall(t *testing.T) {
 		t.Errorf("error: %v", err)
 	}
 	if len(violations) != 1 || violations[0].Line != 7 {
-		t.Errorf("got %#v, expected 1 violation at line 7", violations)
+		t.Errorf("got %v, expected 1 violation at line 7", violations)
 	}
 }
 
@@ -167,6 +167,6 @@ func TestChainedMethodCallWithTypeAssertion(t *testing.T) {
 		t.Errorf("error: %v", err)
 	}
 	if len(violations) != 1 || violations[0].Line != 10 {
-		t.Errorf("got %#v, expected 1 violation at line 10", violations)
+		t.Errorf("got %v, expected 1 violation at line 10", violations)
 	}
 }

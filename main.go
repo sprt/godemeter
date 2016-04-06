@@ -36,16 +36,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		wd = ""
-	}
-
-	for _, violation := range violations {
-		relpath, err := filepath.Rel(wd, violation.Filename)
-		if err != nil {
-			relpath = violation.Filename
-		}
-		fmt.Printf("%s:%d:%d: %s\n", relpath, violation.Line, violation.Col, violation.Expr)
+	for _, v := range violations {
+		fmt.Println(v)
 	}
 }

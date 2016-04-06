@@ -9,11 +9,14 @@ import (
 	"go/printer"
 	"go/token"
 	"go/types"
+	"os"
 	"path/filepath"
 	"sort"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
+
+var wd, _ = os.Getwd()
 
 // Violation represents a violation of the Law of Demeter.
 type Violation struct {
@@ -21,6 +24,14 @@ type Violation struct {
 	Line     int
 	Col      int
 	Expr     string
+}
+
+func (v *Violation) String() string {
+	relpath, err := filepath.Rel(wd, v.Filename)
+	if err != nil {
+		relpath = v.Filename
+	}
+	return fmt.Sprintf("%s:%d:%d: %s", relpath, v.Line, v.Col, v.Expr)
 }
 
 // AnalyzeFile analyzes a single file and returns the violations.
