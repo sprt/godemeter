@@ -168,6 +168,16 @@ func (v *astVisitor) visitCallExpr(callExpr *ast.CallExpr) (visitor ast.Visitor)
 			return
 		}
 
+		if typeAssert, ok := fun.X.(*ast.TypeAssertExpr); ok {
+			if _, ok := typeAssert.X.(*ast.CallExpr); ok {
+				// Chained method call with a type assertion
+				// (i.e. a.b().(T).c())
+				v.addViolation(callExpr)
+				return
+			}
+			fun.X = typeAssert.X
+		}
+
 		funcDeclRecv := funcDecl.Recv.List[0].Names[0]
 		if callRecv.Name() == funcDeclRecv.Name {
 			// Call on O itself
@@ -260,7 +270,11 @@ func (v *astVisitor) lookupXSel(sexpr *ast.SelectorExpr) (retx, retsel *ast.Iden
 		return
 	}
 
-	sexpr = sexpr.X.(*ast.SelectorExpr)
+	if x, ok := sexpr.X.(*ast.TypeAssertExpr); ok {
+		sexpr = x.X.(*ast.CallExpr).Fun.(*ast.SelectorExpr)
+	} else {
+		sexpr = sexpr.X.(*ast.SelectorExpr)
+	}
 	retsel = sexpr.Sel
 
 	ident, ok := sexpr.X.(*ast.Ident)

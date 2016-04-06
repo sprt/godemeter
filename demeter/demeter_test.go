@@ -66,6 +66,13 @@ func TestNoViolation(t *testing.T) {
 	type Bar struct{ f *Foo }
 	func (b *Bar) bar() { b.f.foo() }`
 
+	inputs["Call on O's type-asserted direct component"] = `
+	package main
+	type Interface interface { meth() }
+	type Foo struct{ i Interface }
+	func (f *Foo) meth() {}
+	func (f *Foo) foo() { f.i.(*Foo).meth() }`
+
 	inputs["Call on global object"] = `
 	package main
 	type Foo struct{}
@@ -140,5 +147,26 @@ func TestChainedMethodCall(t *testing.T) {
 	}
 	if len(violations) != 1 || violations[0].Line != 7 {
 		t.Errorf("got %#v, expected 1 violation at line 7", violations)
+	}
+}
+
+func TestChainedMethodCallWithTypeAssertion(t *testing.T) {
+	s := `
+	package main
+	type Interface interface { meth() }
+	type Foo struct{}
+	func (f *Foo) meth() {}
+	func (f *Foo) foo() {}
+	type Bar struct{}
+	func (bar *Bar) meth() {}
+	func (b *Bar) bar1() Interface { return &Foo{} }
+	func (b *Bar) bar2() { b.bar1().(*Foo).foo() }`
+
+	violations, err := analyzeString(s)
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+	if len(violations) != 1 || violations[0].Line != 10 {
+		t.Errorf("got %#v, expected 1 violation at line 10", violations)
 	}
 }
