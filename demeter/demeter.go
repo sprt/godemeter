@@ -10,6 +10,7 @@ import (
 	"go/token"
 	"go/types"
 	"path/filepath"
+	"sort"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
@@ -61,6 +62,20 @@ func AnalyzePackage(dirname string) ([]*Violation, error) {
 	return violations, nil
 }
 
+type violationList []*Violation
+
+func (l violationList) Len() int { return len(l) }
+func (l violationList) Less(i, j int) bool {
+	if l[i].Filename != l[j].Filename {
+		return l[i].Filename < l[j].Filename
+	}
+	if l[i].Line != l[j].Line {
+		return l[i].Line < l[j].Line
+	}
+	return l[i].Col < l[j].Col
+}
+func (l violationList) Swap(i, j int) { l[i], l[j] = l[j], l[i] }
+
 // packagePath must not be empty or dot (see types.Config.Check)
 func analyzeFiles(packagePath string, files []*ast.File, fset *token.FileSet) ([]*Violation, error) {
 	info := &types.Info{
@@ -84,12 +99,13 @@ func analyzeFiles(packagePath string, files []*ast.File, fset *token.FileSet) ([
 		return nil, err
 	}
 
-	violations := []*Violation{}
+	violations := make(violationList, 0)
 	for _, f := range files {
 		visitor := newAstVisitor(f, fset, info)
 		ast.Walk(visitor, f)
 		violations = append(violations, visitor.violations...)
 	}
+	sort.Sort(violations)
 
 	return violations, nil
 }
